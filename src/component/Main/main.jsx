@@ -1,12 +1,17 @@
 import React from "react";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import axios from "axios";
-import { Button, Card, Container, Row } from "react-bootstrap";
 
-class Main extends React.Component {
+export default class Search extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { makanan: "Bakso", articles: [] };
+    this.state = {
+      articles: [],
+      loading: false,
+
+      value: "",
+    };
   }
 
   formatDate(date) {
@@ -30,6 +35,24 @@ class Main extends React.Component {
   }
 
   componentDidMount() {
+    this.search = (val) => {
+      this.setState({ loading: true });
+      axios
+        .get(
+          `https://newsapi.org/v2/top-headlines?country=id&q=${val}&apiKey=280c43d0756d4b1a9690a165ae0ebe88`
+        )
+        .then((res) => {
+          const articles = res.data.articles;
+          console.log(articles);
+          this.setState({ articles, loading: false });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+  }
+
+  componentWillUnmount() {
     axios
       .get(
         "https://newsapi.org/v2/top-headlines?" +
@@ -40,12 +63,34 @@ class Main extends React.Component {
         const articles = res.data.articles;
         console.log(articles);
         this.setState({ articles });
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
+
+  onChangeHandler = (e) => {
+    this.search(e.target.value);
+    this.setState({ value: e.target.value });
+  };
 
   render() {
     return (
       <Container>
+        <Row className="d-flex justify-content-center">
+          <Col md={6}>
+            <Form className="d-flex mt-3">
+              <Form.Control
+                type="search"
+                placeholder="Search"
+                className="me-2"
+                aria-label="Search"
+                name="name"
+                onChange={(e) => this.onChangeHandler(e)}
+              />
+            </Form>
+          </Col>
+        </Row>
         <Row className="d-flex mt-3 gap-3 justify-content-center">
           {this.state.articles.map((news, i) => {
             return (
@@ -73,5 +118,3 @@ class Main extends React.Component {
     );
   }
 }
-
-export default Main;
